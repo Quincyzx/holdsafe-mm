@@ -1,1 +1,920 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HoldSafe MM – Secure Crypto Escrow</title>
+    <meta name="description" content="Automated crypto escrow for fast, secure digital deals. Join our Discord to get started.">
+    <meta property="og:title" content="HoldSafe MM – Secure Crypto Escrow">
+    <meta property="og:description" content="Automated crypto escrow for fast, secure digital deals.">
+    <meta property="og:image" content="https://media.discordapp.net/attachments/1510867893565390948/1519573499822346391/content.png?ex=6a3e0c9a&is=6a3cbb1a&hm=e15baf96cda018a23f6f54397d6c6c27f3379fc60aa4110d82158319bfbae831&=&format=webp&quality=lossless&width=960&height=960">
+    <meta property="og:type" content="website">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+        :root {
+            --primary: #3B82F6;
+            --primary-dark: #2563EB;
+            --primary-light: #60A5FA;
+            --bg: #050810;
+            --bg-card: #0D1117;
+            --border: rgba(255,255,255,0.06);
+            --border-hover: rgba(59,130,246,0.3);
+            --text: #F1F5F9;
+            --text-muted: #94A3B8;
+            --text-faint: #475569;
+            --green: #10B981;
+            --white: #FFFFFF;
+            --font: 'Inter', sans-serif;
+            --font-display: 'Space Grotesk', sans-serif;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: var(--font);
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::selection { background: var(--primary); color: white; }
+
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        .grid-bg {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none;
+            background-image:
+                linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+        }
+
+        .glow-orb {
+            position: fixed; pointer-events: none; z-index: 0;
+            border-radius: 50%; filter: blur(120px); opacity: 0.12;
+        }
+
+        .glow-orb-1 {
+            width: 700px; height: 700px;
+            background: var(--primary);
+            top: -200px; right: -200px;
+        }
+
+        .glow-orb-2 {
+            width: 500px; height: 500px;
+            background: #1D4ED8;
+            bottom: -100px; left: -100px;
+        }
+
+        /* ===== NAV ===== */
+        .nav {
+            position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+            background: rgba(5,8,16,0.85);
+            backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            height: 88px; /* Expanded height to accommodate a larger logo */
+        }
+
+        .nav-logo {
+            display: flex; align-items: center; gap: 14px;
+            text-decoration: none;
+        }
+
+        .nav-logo img {
+            height: 64px; /* Scaled up logo */
+            width: auto;
+            object-fit: contain;
+            border-radius: 12px;
+        }
+
+        .nav-logo-text {
+            font-family: var(--font-display);
+            font-size: 1.35rem; font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .nav-logo-text span {
+            color: var(--primary-light);
+        }
+
+        .nav-links {
+            display: flex; align-items: center; gap: 36px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            text-decoration: none; color: var(--text-muted);
+            font-size: 0.9rem; font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .nav-links a:hover { color: var(--text); }
+
+        .nav-cta {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 11px 24px;
+            background: var(--primary); color: white;
+            border: none; border-radius: 10px;
+            font-size: 0.9rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 20px rgba(59,130,246,0.3);
+        }
+
+        .nav-cta:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 0 30px rgba(59,130,246,0.4);
+        }
+
+        .burger {
+            display: none; background: none; border: none;
+            cursor: pointer; padding: 8px;
+            flex-direction: column; gap: 5px;
+        }
+
+        .burger span {
+            width: 24px; height: 2px; background: var(--text);
+            border-radius: 2px; transition: all 0.3s ease;
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 200px 0 120px;
+            position: relative; z-index: 1;
+        }
+
+        .hero-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: grid; grid-template-columns: 1fr 1fr;
+            gap: 72px; align-items: center;
+        }
+
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 14px 6px 8px;
+            background: rgba(16,185,129,0.08);
+            border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 100px;
+            font-size: 0.82rem; font-weight: 500; color: var(--green);
+            margin-bottom: 28px;
+        }
+
+        .hero-badge-dot {
+            width: 7px; height: 7px;
+            background: var(--green); border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.4); }
+        }
+
+        .hero h1 {
+            font-family: var(--font-display);
+            font-size: 3.8rem; font-weight: 700;
+            line-height: 1.08; letter-spacing: -2px;
+            color: var(--white); margin-bottom: 20px;
+        }
+
+        .hero h1 .accent {
+            background: linear-gradient(135deg, var(--primary-light), var(--primary));
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-desc {
+            font-size: 1.1rem; color: var(--text-muted);
+            max-width: 480px; margin-bottom: 36px; line-height: 1.75;
+        }
+
+        .hero-actions { display: flex; gap: 12px; align-items: center; }
+
+        .btn-primary {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 16px 32px;
+            background: var(--primary); color: white;
+            border: none; border-radius: 12px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 30px rgba(59,130,246,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 0 40px rgba(59,130,246,0.45);
+        }
+
+        .btn-secondary {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 16px 28px;
+            background: transparent; color: var(--text-muted);
+            border: 1px solid var(--border); border-radius: 12px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; text-decoration: none;
+            transition: all 0.25s ease;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--border-hover);
+            color: var(--text);
+            transform: translateY(-2px);
+        }
+
+        .hero-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+        .hero-stat {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 28px 24px;
+            transition: all 0.3s ease;
+            position: relative; overflow: hidden;
+        }
+
+        .hero-stat::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.3), transparent);
+        }
+
+        .hero-stat:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 30px rgba(59,130,246,0.08);
+            transform: translateY(-2px);
+        }
+
+        .hero-stat-number {
+            font-family: var(--font-display);
+            font-size: 2rem; font-weight: 700;
+            color: var(--white); letter-spacing: -1px; margin-bottom: 4px;
+        }
+
+        .hero-stat-label {
+            font-size: 0.82rem; color: var(--text-faint); font-weight: 500;
+        }
+
+        /* ===== TRUST BAR ===== */
+        .trust-bar {
+            padding: 32px 0;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-card);
+            position: relative; z-index: 1;
+        }
+
+        .trust-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: center;
+            gap: 48px; flex-wrap: wrap;
+        }
+
+        .trust-item {
+            display: flex; align-items: center; gap: 8px;
+            color: var(--text-faint); font-size: 0.85rem; font-weight: 500;
+        }
+
+        .trust-item i { color: var(--green); }
+
+        /* ===== SECTIONS ===== */
+        section { position: relative; z-index: 1; }
+
+        .how { padding: 100px 0; }
+
+        .section-label {
+            display: inline-flex; align-items: center; gap: 8px;
+            font-size: 0.75rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 2px;
+            color: var(--primary-light); margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 2.6rem; font-weight: 700;
+            letter-spacing: -1.5px; color: var(--white);
+            margin-bottom: 12px;
+        }
+
+        .section-desc {
+            font-size: 1.05rem; color: var(--text-muted);
+            max-width: 540px; margin-bottom: 56px; line-height: 1.75;
+        }
+
+        .section-center { text-align: center; }
+        .section-center .section-desc { margin-left: auto; margin-right: auto; }
+
+        /* ===== STEPS ===== */
+        .steps-grid {
+            display: grid; grid-template-columns: repeat(4,1fr); gap: 20px;
+        }
+
+        .step-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 32px 24px;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+
+        .step-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
+        }
+
+        .step-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 40px rgba(59,130,246,0.08);
+            transform: translateY(-4px);
+        }
+
+        .step-num {
+            width: 38px; height: 38px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.9rem;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(59,130,246,0.3);
+        }
+
+        .step-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.05rem; font-weight: 600;
+            margin-bottom: 10px; color: var(--white);
+        }
+
+        .step-card p {
+            font-size: 0.88rem; color: var(--text-muted); line-height: 1.7;
+        }
+
+        /* ===== FEATURES ===== */
+        .features { padding: 100px 0; background: var(--bg-card); }
+
+        .features-grid {
+            display: grid; grid-template-columns: repeat(3,1fr); gap: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 20px; padding: 32px 28px;
+            transition: all 0.3s ease; position: relative; overflow: hidden;
+        }
+
+        .feature-card::before {
+            content: '';
+            position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(59,130,246,0.2), transparent);
+        }
+
+        .feature-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 40px rgba(59,130,246,0.08);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 46px; height: 46px;
+            background: rgba(59,130,246,0.1);
+            border: 1px solid rgba(59,130,246,0.15);
+            border-radius: 12px;
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        .feature-icon i { color: var(--primary-light); font-size: 1.15rem; }
+
+        .feature-card h3 {
+            font-family: var(--font-display);
+            font-size: 1.05rem; font-weight: 600;
+            margin-bottom: 10px; color: var(--white);
+        }
+
+        .feature-card p {
+            font-size: 0.88rem; color: var(--text-muted); line-height: 1.75;
+        }
+
+        /* ===== COINS ===== */
+        .coins { padding: 100px 0; }
+
+        .coins-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(195px, 1fr));
+            gap: 14px; max-width: 900px; margin: 0 auto;
+        }
+
+        .coin-card {
+            display: flex; align-items: center; gap: 12px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px; padding: 14px 18px;
+            transition: all 0.25s ease;
+        }
+
+        .coin-card:hover {
+            border-color: var(--border-hover);
+            box-shadow: 0 0 20px rgba(59,130,246,0.06);
+            transform: translateY(-2px);
+        }
+
+        .coin-icon {
+            width: 34px; height: 34px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: 0.78rem; color: white;
+            flex-shrink: 0;
+        }
+
+        .coin-btc { background: #F7931A; }
+        .coin-eth { background: #627EEA; }
+        .coin-sol { background: linear-gradient(135deg,#9945FF,#14F195); }
+        .coin-ltc { background: #345D9D; }
+        .coin-usdt { background: #26A17B; }
+        .coin-usdc { background: #2775CA; }
+
+        .coin-name { font-size: 0.88rem; font-weight: 600; color: var(--white); }
+        .coin-network { font-size: 0.75rem; color: var(--text-faint); }
+
+        .coins-more {
+            text-align: center; margin-top: 20px;
+            font-size: 0.85rem; color: var(--text-faint);
+        }
+
+        /* ===== FAQ ===== */
+        .faq { padding: 100px 0; background: var(--bg-card); }
+
+        .faq-list { max-width: 700px; margin: 0 auto; }
+
+        .faq-item {
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 16px; margin-bottom: 10px;
+            overflow: hidden; transition: all 0.3s ease;
+        }
+
+        .faq-item:hover { border-color: rgba(59,130,246,0.15); }
+        .faq-item.active { border-color: rgba(59,130,246,0.3); }
+
+        .faq-q {
+            padding: 20px 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            cursor: pointer; user-select: none;
+            font-weight: 600; font-size: 0.95rem; color: var(--text);
+            transition: color 0.2s ease;
+        }
+
+        .faq-q:hover { color: var(--white); }
+
+        .faq-arrow {
+            width: 26px; height: 26px;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.7rem; color: var(--text-faint);
+            transition: all 0.3s ease; flex-shrink: 0;
+        }
+
+        .faq-item.active .faq-arrow {
+            background: var(--primary); color: white;
+            transform: rotate(180deg);
+        }
+
+        .faq-a {
+            max-height: 0; overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            padding: 0 24px;
+            color: var(--text-muted); font-size: 0.9rem; line-height: 1.8;
+        }
+
+        .faq-item.active .faq-a {
+            max-height: 300px; padding: 0 24px 20px;
+        }
+
+        /* ===== CTA ===== */
+        .cta {
+            padding: 140px 0;
+            position: relative; z-index: 1; overflow: hidden;
+        }
+
+        .cta::before {
+            content: '';
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px; height: 400px;
+            background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 70%);
+        }
+
+        .cta-inner {
+            max-width: 640px; margin: 0 auto; padding: 0 24px;
+            text-align: center; position: relative; z-index: 1;
+        }
+
+        .cta h2 {
+            font-family: var(--font-display);
+            font-size: 3rem; font-weight: 700;
+            color: var(--white); letter-spacing: -1.5px; margin-bottom: 16px;
+        }
+
+        .cta p {
+            font-size: 1.1rem; color: var(--text-muted);
+            margin-bottom: 40px; line-height: 1.7;
+        }
+
+        /* ===== FOOTER ===== */
+        .footer {
+            padding: 48px 0 32px;
+            background: var(--bg-card);
+            border-top: 1px solid var(--border);
+            position: relative; z-index: 1;
+        }
+
+        .footer-inner {
+            max-width: 1200px; margin: 0 auto; padding: 0 24px;
+            display: flex; align-items: center; justify-content: space-between;
+            flex-wrap: wrap; gap: 20px;
+        }
+
+        /* Footer logo matched layout */
+        .footer-logo {
+            display: flex; align-items: center; gap: 12px;
+            text-decoration: none;
+        }
+
+        .footer-logo img {
+            height: 48px; /* Slightly scaled up for footer */
+            width: auto;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        .footer-logo-text {
+            font-family: var(--font-display);
+            font-size: 1.15rem; font-weight: 700;
+            color: var(--white);
+            letter-spacing: -0.3px;
+        }
+
+        .footer-logo-text span { color: var(--primary-light); }
+
+        .footer-links {
+            display: flex; gap: 32px; list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-faint); font-size: 0.85rem;
+            text-decoration: none; font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover { color: var(--text); }
+
+        .footer-copy {
+            width: 100%; text-align: center;
+            color: var(--text-faint); font-size: 0.78rem;
+            margin-top: 32px; padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .hero h1 { font-size: 3rem; }
+            .hero-inner { grid-template-columns: 1fr; gap: 48px; }
+            .steps-grid { grid-template-columns: repeat(2,1fr); }
+            .features-grid { grid-template-columns: repeat(2,1fr); }
+            .section-title { font-size: 2.2rem; }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .burger { display: flex; }
+            .hero { padding: 140px 0 80px; }
+            .hero h1 { font-size: 2.4rem; letter-spacing: -1px; }
+            .steps-grid { grid-template-columns: 1fr; }
+            .features-grid { grid-template-columns: 1fr; }
+            .trust-inner { gap: 20px; }
+            .cta h2 { font-size: 2.2rem; }
+            .footer-inner { flex-direction: column; text-align: center; }
+            .footer-links { justify-content: center; }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 { font-size: 2rem; }
+            .section-title { font-size: 1.8rem; }
+            .cta h2 { font-size: 1.8rem; }
+            .hero-stats { grid-template-columns: 1fr 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="grid-bg"></div>
+    <div class="glow-orb glow-orb-1"></div>
+    <div class="glow-orb glow-orb-2"></div>
+
+    <!-- NAV -->
+    <nav class="nav">
+        <div class="nav-inner">
+            <a href="#" class="nav-logo">
+                <img src="https://media.discordapp.net/attachments/1510867893565390948/1519573499822346391/content.png?ex=6a3e0c9a&is=6a3cbb1a&hm=e15baf96cda018a23f6f54397d6c6c27f3379fc60aa4110d82158319bfbae831&=&format=webp&quality=lossless&width=960&height=960" alt="HoldSafe MM Icon">
+                <span class="nav-logo-text">HoldSafe <span>MM</span></span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#how">How it works</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#coins">Supported Coins</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+            <a href="YOUR_DISCORD_INVITE_LINK" target="_blank" class="nav-cta">
+                <i class="fa-brands fa-discord"></i> Join Discord
+            </a>
+            <button class="burger">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-inner">
+            <div>
+                <div class="hero-badge">
+                    <div class="hero-badge-dot"></div>
+                    Trusted by 135,000+ users
+                </div>
+                <h1>Secure Crypto Deals with <span class="accent">Automated Escrow</span></h1>
+                <p class="hero-desc">Automate your deals with step-by-step escrow designed to protect both parties from payment to release.</p>
+                <div class="hero-actions">
+                    <a href="YOUR_DISCORD_INVITE_LINK" target="_blank" class="btn-primary">
+                        <i class="fa-brands fa-discord"></i>
+                        <span>Join Our Discord</span>
+                    </a>
+                    <a href="#how" class="btn-secondary">How it works</a>
+                </div>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-number">$130m+</div>
+                    <div class="hero-stat-label">Volume Secured</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">24/7</div>
+                    <div class="hero-stat-label">Automated</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">&lt;15min</div>
+                    <div class="hero-stat-label">Avg Deal Time</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-number">+1M</div>
+                    <div class="hero-stat-label">Transactions Secured</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- TRUST BAR -->
+    <div class="trust-bar">
+        <div class="trust-inner">
+            <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Fully Automated</div>
+            <div class="trust-item"><i class="fa-solid fa-circle-check"></i> No Manual Handling</div>
+            <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Instant Detection</div>
+            <div class="trust-item"><i class="fa-solid fa-circle-check"></i> Multi-Coin Support</div>
+            <div class="trust-item"><i class="fa-solid fa-circle-check"></i> 24/7 Availability</div>
+        </div>
+    </div>
+
+    <!-- HOW IT WORKS -->
+    <section id="how" class="how">
+        <div class="container">
+            <div class="section-center">
+                <div class="section-label"><i class="fa-solid fa-gear"></i> Process</div>
+                <h2 class="section-title">How it works</h2>
+                <p class="section-desc">Clear, fast, and simple. Every deal follows a guided flow from start to finish.</p>
+            </div>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-num">1</div>
+                    <h3>Create a Deal</h3>
+                    <p>Open a deal in our Discord. Select currency, amount, and the other party involved.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">2</div>
+                    <h3>Deposit to Escrow</h3>
+                    <p>Sender deposits crypto to our secure escrow wallet, confirming the transaction.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">3</div>
+                    <h3>Complete the Trade</h3>
+                    <p>Both parties fulfill their obligations. Receiver confirms they've received the amount.</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-num">4</div>
+                    <h3>Funds Released</h3>
+                    <p>Once both users confirm, we release the crypto to the receiver. Deal complete.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-center">
+                <div class="section-label"><i class="fa-solid fa-star"></i> Features</div>
+                <h2 class="section-title">Everything you need, covered</h2>
+                <p class="section-desc">Built for security, speed, and simplicity.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-robot"></i></div>
+                    <h3>Fully Automated Escrow</h3>
+                    <p>Create deals, fund escrow, and release payments through a guided flow built to keep both parties aligned.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-clock"></i></div>
+                    <h3>24/7 Operation</h3>
+                    <p>Trade anytime. HoldSafe MM runs around the clock so users can complete deals without waiting.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                    <h3>Lightning Fast</h3>
+                    <p>Payments are detected quickly and deals move fast, completing transactions in minutes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-tags"></i></div>
+                    <h3>Lowest Fees</h3>
+                    <p>Simple, competitive pricing with transparent fees so you always know what you're paying.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-coins"></i></div>
+                    <h3>Multi-Coin Support</h3>
+                    <p>Trade using BTC, ETH, SOL, LTC, and stablecoins like USDT and USDC across multiple networks.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon"><i class="fa-solid fa-database"></i></div>
+                    <h3>Auto Backup</h3>
+                    <p>All deals are securely stored and logged. Revisit past transactions or contact support anytime.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COINS -->
+    <section id="coins" class="coins">
+        <div class="container">
+            <div class="section-center">
+                <div class="section-label"><i class="fa-solid fa-wallet"></i> Currencies</div>
+                <h2 class="section-title">Supported Coins</h2>
+                <p class="section-desc">Trade with major cryptocurrencies and stablecoins.</p>
+            </div>
+            <div class="coins-grid">
+                <div class="coin-card">
+                    <div class="coin-icon coin-btc"><i class="fa-brands fa-bitcoin"></i></div>
+                    <div><div class="coin-name">Bitcoin</div><div class="coin-network">BTC</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-eth"><i class="fa-brands fa-ethereum"></i></div>
+                    <div><div class="coin-name">Ethereum</div><div class="coin-network">ETH</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-sol">S</div>
+                    <div><div class="coin-name">Solana</div><div class="coin-network">SOL</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-ltc">Ł</div>
+                    <div><div class="coin-name">Litecoin</div><div class="coin-network">LTC</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-usdt">₮</div>
+                    <div><div class="coin-name">USDT</div><div class="coin-network">Solana</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-usdt">₮</div>
+                    <div><div class="coin-name">USDT</div><div class="coin-network">Ethereum</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-usdt">₮</div>
+                    <div><div class="coin-name">USDT</div><div class="coin-network">BSC</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-usdc">$</div>
+                    <div><div class="coin-name">USDC</div><div class="coin-network">Solana</div></div>
+                </div>
+                <div class="coin-card">
+                    <div class="coin-icon coin-usdc">$</div>
+                    <div><div class="coin-name">USDC</div><div class="coin-network">Ethereum</div></div>
+                </div>
+            </div>
+            <div class="coins-more">+ More coming soon</div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="faq">
+        <div class="container">
+            <div class="section-center">
+                <div class="section-label"><i class="fa-solid fa-circle-question"></i> Support</div>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-desc">Everything you need to know about HoldSafe MM.</p>
+            </div>
+            <div class="faq-list">
+                <div class="faq-item active">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        What is HoldSafe MM?
+                        <div class="faq-arrow"><i class="fa-solid fa-chevron-down"></i></div>
+                    </div>
+                    <div class="faq-a">HoldSafe MM is an automated escrow middleman service that helps users safely trade cryptocurrencies. Funds are held securely until both parties confirm the deal is complete.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        How does creating a deal work?
+                        <div class="faq-arrow"><i class="fa-solid fa-chevron-down"></i></div>
+                    </div>
+                    <div class="faq-a">Join our Discord server and open a deal ticket. Choose the coin, amount, and tag the other party. Our bot guides you through every step from deposit to release.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        What coins are supported?
+                        <div class="faq-arrow"><i class="fa-solid fa-chevron-down"></i></div>
+                    </div>
+                    <div class="faq-a">We support Bitcoin (BTC), Ethereum (ETH), Solana (SOL), Litecoin (LTC), and stablecoins including USDT and USDC across multiple networks.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        What happens if something goes wrong?
+                        <div class="faq-arrow"><i class="fa-solid fa-chevron-down"></i></div>
+                    </div>
+                    <div class="faq-a">Our support team is available to mediate disputes. Funds remain locked in escrow until both parties reach an agreement or a resolution is provided by our team.</div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-q" onclick="toggleFaq(this)">
+                        How fast are deals completed?
+                        <div class="faq-arrow"><i class="fa-solid fa-chevron-down"></i></div>
+                    </div>
+                    <div class="faq-a">Most deals are completed within 15 minutes once both parties fulfill their obligations. Payment detection is instant and confirmations are fast.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="cta">
+        <div class="cta-inner">
+            <h2>Ready to deal securely?</h2>
+            <p>Join thousands of users using HoldSafe MM to secure crypto deals with fast, automated escrow.</p>
+            <a href="YOUR_DISCORD_INVITE_LINK" target="_blank" class="btn-primary">
+                <i class="fa-brands fa-discord"></i>
+                <span>Join Our Discord</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <div class="footer-inner">
+            <a href="#" class="footer-logo">
+                <img src="https://media.discordapp.net/attachments/1510867893565390948/1519573499822346391/content.png?ex=6a3e0c9a&is=6a3cbb1a&hm=e15baf96cda018a23f6f54397d6c6c27f3379fc60aa4110d82158319bfbae831&=&format=webp&quality=lossless&width=960&height=960" alt="HoldSafe MM Logo">
+                <span class="footer-logo-text">HoldSafe <span>MM</span></span>
+            </a>
+            <ul class="footer-links">
+                <li><a href="#how">How it works</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#coins">Coins</a></li>
+                <li><a href="#faq">FAQ</a></li>
+            </ul>
+            <div class="footer-copy">
+                &copy; 2025 HoldSafe MM &nbsp;·&nbsp; Automated crypto escrow for fast, secure digital deals.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        function toggleFaq(el) {
+            const item = el.closest('.faq-item');
+            const wasActive = item.classList.contains('active');
+            document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+            if (!wasActive) item.classList.add('active');
+        }
+
+        document.querySelector('.burger').addEventListener('click', function() {
+            this.classList.toggle('active');
+        });
+    </script>
+</body>
+</html>
